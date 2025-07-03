@@ -1,0 +1,50 @@
+# 📊 DataWareHouse Setup Script
+
+This repository contains a SQL Server script to initialize a structured data warehouse environment using a multi-layered schema approach: **Bronze**, **Silver**, and **Gold**.
+
+---
+
+## ✅ What This Script Does
+
+1. **Connects to the master database**
+2. **Checks if the `DataWareHouse` database exists**
+3. **Drops the existing `DataWareHouse` database (if found)**
+4. **Creates a fresh `DataWareHouse` database**
+5. **Switches context to the new database**
+6. **Creates three schemas:**
+   - 🟤 **Bronze** – raw ingested data
+   - ⚪ **Silver** – cleaned/validated data
+   - 🟡 **Gold** – business-ready curated data
+
+---
+
+## 🧾 SQL Script (initialize_datawarehouse.sql)
+
+```sql
+USE master;
+GO
+
+-- Drop and recreate Database 
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'DataWareHouse')
+BEGIN
+    ALTER DATABASE DataWareHouse SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE DataWareHouse;
+END;
+GO
+
+-- Create New Database
+CREATE DATABASE DataWareHouse;
+GO
+
+USE DataWareHouse;
+GO
+
+-- Create Schemas
+CREATE SCHEMA Bronze;
+GO
+
+CREATE SCHEMA Silver;
+GO
+
+CREATE SCHEMA Gold;
+GO
