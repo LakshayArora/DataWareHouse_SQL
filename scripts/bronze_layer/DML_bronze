@@ -1,0 +1,189 @@
+/*
+------------------------------------------------------------
+    Script: Bronze Layer DML – Data Load Procedure
+    Author: Lakshay Arora
+    Description:
+        This script defines and executes a stored procedure to
+        truncate and bulk insert data into Bronze layer tables.
+        It includes error handling and performance logging.
+------------------------------------------------------------
+*/
+
+--BULK inserts
+
+Create or Alter Procedure bronze.load_bronze as
+
+	Begin
+		DECLARE @start_time DATETIME,
+				@end_time DATETIME,
+				@total_start DATETIME,
+				@total_end DATETIME
+		set @total_start=Getdate();
+		Print'===================================================='
+		Print'Loading Bronze Layer'
+		Print'===================================================='
+	--CUST_INFO
+
+		PRINT CHAR(13) + CHAR(10);
+		Print'----------------------------------------------------'
+		Print'Loading CRM Tables'
+		Print'----------------------------------------------------'
+
+	BEGIN TRY
+		Set @start_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		Print'>>Truncating Table : bronze.crm_cust_info'
+		Truncate Table bronze.crm_cust_info;
+		Print'>>Inserting Data into: bronze.crm_cust_info'
+		BULK INSERT bronze.crm_cust_info
+			From 'D:\SQLBaraa\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_crm\cust_info.csv'
+			With 
+			(
+				FIRSTROW = 2,
+				FIELDTERMINATOR = ',',
+				TABLOCK
+			);
+		Set @end_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		PRINT'>>Load Time:'+Cast(Datediff(second,@start_time,@end_time)AS NVARCHAR)+'seconds'
+
+	END TRY
+
+	BEGIN CATCH
+		PRINT 'Error Loading the file crm_cust_info'
+		Print Error_Message();
+	END CATCH
+
+	--PRD_INFO
+	BEGIN TRY
+		Set @start_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		Print'>>Truncating Table: bronze.crm_prd_info'
+		Truncate Table bronze.crm_prd_info;
+		Print'>>Inserting Data into: bronze.crm_prd_info'
+		BULK INSERT bronze.crm_prd_info
+			From 'D:\SQLBaraa\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_crm\prd_info.csv'
+			With 
+			(
+				FIRSTROW = 2,
+				FIELDTERMINATOR = ',',
+				TABLOCK
+			);	
+		Set @end_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		PRINT'>>Load Time:'+Cast(Datediff(second,@start_time,@end_time)AS NVARCHAR)+'seconds'
+	END TRY
+	BEGIN CATCH
+		PRINT 'Error Loading the file crm_prd_info'
+		Print Error_Message();
+	END CATCH
+
+	--SALES_DETAILS
+	BEGIN TRY
+		Set @start_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		Print'>>Truncating Table: bronze.crm_sales_details'
+		Truncate Table bronze.crm_sales_details;
+		Print'>>Inserting Data into: bronze.crm_sales_details'
+		BULK INSERT bronze.crm_sales_details
+			From 'D:\SQLBaraa\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_crm\sales_details.csv'
+			With 
+			(
+				FIRSTROW = 2,
+				FIELDTERMINATOR = ',',
+				TABLOCK
+			);
+		PRINT CHAR(13) + CHAR(10);
+		Set @end_time=GETDATE();
+		PRINT'>>Load Time:'+Cast(Datediff(second,@start_time,@end_time)AS NVARCHAR)+'seconds'
+
+	END TRY
+	BEGIN CATCH
+		PRINT 'Error Loading the file bronze.crm_sales_details'
+		Print Error_Message();
+	END CATCH
+
+
+		PRINT CHAR(13) + CHAR(10);
+		Print'----------------------------------------------------'
+		Print'Loading ERP Tables'
+		Print'----------------------------------------------------'
+	--CUST_AZ12
+	BEGIN TRY
+		Set @start_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		Print'>>Truncating Table: bronze.erp_cust_az12'
+		Truncate Table bronze.erp_cust_az12;
+		Print'>>Inserting Data into: bronze.erp_cust_az12'
+		BULK INSERT bronze.erp_cust_az12
+			From 'D:\SQLBaraa\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_erp\CUST_AZ12.csv'
+			With 
+			(
+				FIRSTROW = 2,
+				FIELDTERMINATOR = ',',
+				TABLOCK
+			);
+		Set @end_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		PRINT'>>Load Time:'+Cast(Datediff(second,@start_time,@end_time)AS NVARCHAR)+'seconds'
+ 
+	END TRY
+	BEGIN CATCH
+		PRINT 'Error Loading the file erp_cust_az12'
+		Print Error_Message();
+	END CATCH
+
+	--LOC_A101
+	BEGIN TRY
+		Set @start_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		Print'>>Truncating Table: bronze.erp_loc_a101'
+		Truncate Table bronze.erp_loc_a101;
+		Print'>>Inserting Data into: bronze.erp_loc_a101'
+		BULK INSERT bronze.erp_loc_a101
+			From 'D:\SQLBaraa\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_erp\LOC_A101.csv'
+			With 
+			(
+				FIRSTROW = 2,
+				FIELDTERMINATOR = ',',
+				TABLOCK
+			);
+		Set @end_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		PRINT'>>Load Time:'+Cast(Datediff(second,@start_time,@end_time)AS NVARCHAR)+'seconds'
+ 
+	END TRY
+	BEGIN CATCH
+		PRINT 'Error Loading the file erp_loc_a101'
+		Print Error_Message();
+	END CATCH
+	--PX_CAT_G1V2
+	BEGIN TRY
+		Set @start_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		Print'>>Truncating Table: bronze.erp_px_cat_g1v2'
+		Truncate Table bronze.erp_px_cat_g1v2;
+		Print'>>Inserting Data into: bronze.erp_px_cat_g1v2'
+		BULK INSERT bronze.erp_px_cat_g1v2
+			From 'D:\SQLBaraa\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv'
+			With 
+			(
+				FIRSTROW = 2,
+				FIELDTERMINATOR = ',',
+				TABLOCK
+			);
+		Set @end_time=GETDATE();
+		PRINT CHAR(13) + CHAR(10);
+		PRINT'>>Load Time:'+Cast(Datediff(second,@start_time,@end_time)AS NVARCHAR)+'seconds'
+	END TRY
+	BEGIN CATCH
+		PRINT 'Error Loading the file erp_px_cat_g1v2'
+		Print Error_Message();
+	END CATCH
+		PRINT CHAR(13) + CHAR(10);
+		set @total_end=Getdate()
+		PRINT'>>Total Load Time:'+Cast(Datediff(second,@total_start,@total_end)AS NVARCHAR)+'seconds'
+END
+GO
+
+EXEC bronze.load_bronze
