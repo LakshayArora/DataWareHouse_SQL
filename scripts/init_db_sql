@@ -39,12 +39,44 @@ GO
 USE DataWareHouse;
 GO
 
--- Create Schemas
-CREATE SCHEMA Bronze;
-GO
 
-CREATE SCHEMA Silver;
-GO
+--Creating Necessary Schemas
 
-CREATE SCHEMA Gold;
-GO
+-- Create Bronze schema if it doesn't exist
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Bronze')
+BEGIN
+    BEGIN TRY
+        EXEC('CREATE SCHEMA Bronze');
+        PRINT 'Schema Bronze created.';
+    END TRY
+    BEGIN CATCH
+        PRINT 'Error creating schema Bronze.';
+        PRINT ERROR_MESSAGE();
+    END CATCH
+END
+
+-- Create Silver schema
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Silver')
+BEGIN
+    BEGIN TRY
+        EXEC('CREATE SCHEMA Silver');
+        PRINT 'Schema Silver created.';
+    END TRY
+    BEGIN CATCH
+        PRINT 'Error creating schema Silver.';
+        PRINT ERROR_MESSAGE();
+    END CATCH
+END
+
+-- Create Gold schema
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Gold')
+BEGIN
+    BEGIN TRY
+        EXEC('CREATE SCHEMA Gold');
+        PRINT 'Schema Gold created.';
+    END TRY
+    BEGIN CATCH
+        PRINT 'Error creating schema Gold.';
+        PRINT ERROR_MESSAGE();
+    END CATCH
+END
