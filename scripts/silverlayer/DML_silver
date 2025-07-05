@@ -1,4 +1,36 @@
+/*
+====================================================
+Author       : Lakshay Arora
+Description  : 
+  Stored procedure to load and transform data from 
+  the Bronze layer to the Silver layer in a 
+  Data Lakehouse architecture.
 
+  Operations include:
+    - Truncating target Silver tables
+    - Inserting cleaned and standardized data from 
+      Bronze tables
+    - Logging transformation load durations
+    - Capturing runtime error details using TRY-CATCH
+
+  SQL Concepts:
+    - DML: INSERT, TRUNCATE
+    - Window Functions: ROW_NUMBER, LEAD
+    - Error Handling: TRY...CATCH
+    - String and Date Functions for data cleansing
+
+Usage:
+  EXEC silver.load_silver;
+
+Target Tables:
+  - silver.crm_cust_info
+  - silver.crm_prd_info
+  - silver.crm_sales_details
+  - silver.erp_cust_az12
+  - silver.erp_loc_a101
+  - silver.erp_px_cat_g1v2
+====================================================
+*/
 
 
 
