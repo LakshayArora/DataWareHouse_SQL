@@ -1,1 +1,132 @@
+**Data Catalog for Data Warehouse Project**
+
+---
+
+### 🔷 Bronze Layer
+
+Raw data ingestion layer containing unprocessed data from CRM and ERP systems.
+
+#### **bronze.crm\_cust\_info**
+
+| Column Name          | Description                | Data Type |
+| -------------------- | -------------------------- | --------- |
+| cst\_id              | Customer ID                | INT       |
+| cst\_key             | Customer Key (Business ID) | NVARCHAR  |
+| cst\_firstname       | First Name                 | NVARCHAR  |
+| cst\_lastname        | Last Name                  | NVARCHAR  |
+| cst\_marital\_status | Marital Status             | NVARCHAR  |
+| cst\_gender          | Gender                     | NVARCHAR  |
+| cst\_date            | Date of Entry              | DATE      |
+
+#### **bronze.crm\_prd\_info**
+
+| Column Name    | Description        | Data Type |
+| -------------- | ------------------ | --------- |
+| prd\_id        | Product ID         | INT       |
+| prd\_key       | Product Key        | NVARCHAR  |
+| prd\_nm        | Product Name       | NVARCHAR  |
+| prd\_cost      | Product Cost       | INT       |
+| prd\_line      | Product Line Code  | NVARCHAR  |
+| prd\_start\_dt | Product Start Date | DATETIME  |
+| prd\_end\_dt   | Product End Date   | DATETIME  |
+
+#### **bronze.crm\_sales\_details**
+
+| Column Name    | Description         | Data Type |
+| -------------- | ------------------- | --------- |
+| sls\_ord\_num  | Sales Order Number  | NVARCHAR  |
+| sls\_prd\_key  | Product Key         | NVARCHAR  |
+| sls\_cust\_id  | Customer ID         | INT       |
+| sls\_order\_dt | Order Date (Int)    | INT       |
+| sls\_ship\_dt  | Shipping Date (Int) | INT       |
+| sls\_due\_dt   | Due Date (Int)      | INT       |
+| sls\_sales     | Sales Value         | INT       |
+| sls\_quantity  | Quantity Sold       | INT       |
+| sls\_price     | Price per Unit      | INT       |
+
+#### **bronze.erp\_loc\_a101**
+
+| Column Name | Description  | Data Type |
+| ----------- | ------------ | --------- |
+| cid         | Customer ID  | NVARCHAR  |
+| cntry       | Country Code | NVARCHAR  |
+
+#### **bronze.erp\_cust\_az12**
+
+| Column Name | Description | Data Type |
+| ----------- | ----------- | --------- |
+| cid         | Customer ID | NVARCHAR  |
+| bdate       | Birthdate   | DATE      |
+| gen         | Gender      | NVARCHAR  |
+
+#### **bronze.erp\_px\_cat\_g1v2**
+
+| Column Name  | Description      | Data Type |
+| ------------ | ---------------- | --------- |
+| id           | Category ID      | NVARCHAR  |
+| cat          | Category         | NVARCHAR  |
+| subcat       | Subcategory      | NVARCHAR  |
+| maintainance | Maintenance Info | NVARCHAR  |
+
+---
+
+### 🔹 Silver Layer
+
+Cleansed and transformed data with business rules applied.
+
+(Same schema as Bronze Layer, with `dwh_create_date` and data standardization applied. Not repeated here for brevity.)
+
+---
+
+### 🔶 Gold Layer
+
+Final dimensional model views for analytical consumption.
+
+#### **gold.dim\_customers**
+
+| Column Name      | Description             | Data Type |
+| ---------------- | ----------------------- | --------- |
+| Customer\_key    | Surrogate Key           | INT       |
+| Customer\_id     | Customer ID (CRM)       | INT       |
+| Customer\_number | Customer Key (Business) | NVARCHAR  |
+| First\_name      | First Name              | NVARCHAR  |
+| Last\_name       | Last Name               | NVARCHAR  |
+| Country          | Country                 | NVARCHAR  |
+| Marital\_status  | Marital Status          | NVARCHAR  |
+| Gender           | Gender (Enriched)       | NVARCHAR  |
+| Birthdate        | Date of Birth           | DATE      |
+| Date\_created    | Account Creation Date   | DATE      |
+
+#### **gold.dim\_products**
+
+| Column Name     | Description       | Data Type |
+| --------------- | ----------------- | --------- |
+| Product\_key    | Surrogate Key     | INT       |
+| Product\_id     | Product ID        | INT       |
+| Product\_number | Product Key       | NVARCHAR  |
+| Product\_name   | Name              | NVARCHAR  |
+| Category\_id    | Category ID       | NVARCHAR  |
+| Category        | Category Name     | NVARCHAR  |
+| Subcategory     | Subcategory Name  | NVARCHAR  |
+| Maintainance    | Maintenance Info  | NVARCHAR  |
+| Cost            | Cost              | INT       |
+| Product\_line   | Line of Product   | NVARCHAR  |
+| Start\_date     | Active Start Date | DATE      |
+
+#### **gold.fact\_sales**
+
+| Column Name   | Description           | Data Type |
+| ------------- | --------------------- | --------- |
+| Order\_number | Order Number          | NVARCHAR  |
+| Product\_key  | FK to `dim_products`  | INT       |
+| Customer\_key | FK to `dim_customers` | INT       |
+| Order\_date   | Date of Order         | DATE      |
+| Ship\_date    | Date of Shipment      | DATE      |
+| Due\_date     | Payment Due Date      | DATE      |
+| Sales         | Sales Amount          | INT       |
+| Quantity      | Number of Units Sold  | INT       |
+| Price         | Unit Price            | INT       |
+
+---
+
 
