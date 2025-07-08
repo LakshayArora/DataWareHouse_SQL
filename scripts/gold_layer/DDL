@@ -1,0 +1,121 @@
+/*
+===========================================
+📄 FILE: gold_layer_views.sql
+📦 PURPOSE: Define business-ready views for the Gold Layer of the Data Warehouse
+📁 LAYER: Gold (Semantic / Presentation Layer)
+🧱 STRUCTURE: Star Schema (Dimensions + Fact)
+
+🔍 DESCRIPTION:
+This script creates or alters three key views in the Gold Layer:
+1. gold.dim_customers  – Combines CRM and ERP customer data into a single unified dimension
+2. gold.dim_products   – Enriches product details with category, subcategory, and cost attributes
+3. gold.fact_sales     – A fact view joining cleaned sales data to customer and product dimensions
+
+✅ FEATURES:
+- Uses CREATE OR ALTER VIEW for idempotent execution
+- Implements TRY...CATCH for safe error handling
+- Surrogate keys generated using ROW_NUMBER()
+- Joins sourced from Silver Layer (cleaned and standardized data)
+
+📊 OUTPUT:
+These views form the foundation for BI dashboards, KPI tracking, and advanced SQL analytics.
+
+Author: Lakshay Arora
+===========================================
+*/
+
+-- Customer Dimension View
+BEGIN TRY
+    IF OBJECT_ID('gold.dim_customers', 'V') IS NOT NULL
+        PRINT 'Altering existing view: gold.dim_customers';
+    ELSE
+        PRINT 'Creating new view: gold.dim_customers';
+
+    EXEC('
+    CREATE OR ALTER VIEW gold.dim_customers AS
+    SELECT 
+        ROW_NUMBER() OVER (ORDER BY cst_id) AS Customer_key,
+        ci.cst_id AS Customer_id,
+        ci.cst_key AS Customer_number,
+        ci.cst_firstname AS First_name,
+        ci.cst_lastname AS Last_name,
+        la.cntry AS Country,
+        ci.cst_marital_status AS Marital_status,
+        CASE 
+            WHEN ci.cst_gender != ''n/a'' THEN ci.cst_gender
+            ELSE COALESCE(ca.gen, ''n/a'')
+        END AS Gender,
+        ca.bdate AS Birthdate,
+        ci.cst_date AS Date_created
+    FROM silver.crm_cust_info ci
+    LEFT JOIN silver.erp_cust_az12 ca ON ci.cst_key = ca.cid
+    LEFT JOIN silver.erp_loc_a101 la ON ci.cst_key = la.cid
+    ');
+END TRY
+BEGIN CATCH
+    PRINT 'Error creating or altering gold.dim_customers view:';
+    PRINT ERROR_MESSAGE();
+END CATCH;
+GO
+
+-- Product Dimension View
+BEGIN TRY
+    IF OBJECT_ID('gold.dim_products', 'V') IS NOT NULL
+        PRINT 'Altering existing view: gold.dim_products';
+    ELSE
+        PRINT 'Creating new view: gold.dim_products';
+
+    EXEC('
+    CREATE OR ALTER VIEW gold.dim_products AS
+    SELECT 
+        ROW_NUMBER() OVER (ORDER BY pn.prd_start_dt, pn.prd_key) AS Product_key,
+        pn.prd_id AS Product_id,
+        pn.prd_key AS Product_number,
+        pn.prd_nm AS Product_name,
+        pn.cat_id AS Category_id,
+        pc.cat AS Category,
+        pc.subcat AS Subcategory,
+        pc.maintainance AS Maintainance,
+        pn.prd_cost AS Cost,
+        pn.prd_line AS Product_line,
+        pn.prd_start_dt AS Start_date
+    FROM silver.crm_prd_info pn
+    LEFT JOIN silver.erp_px_cat_g1v2 pc ON pn.cat_id = pc.id
+    WHERE prd_end_dt IS NULL
+    ');
+END TRY
+BEGIN CATCH
+    PRINT 'Error creating or altering gold.dim_products view:';
+    PRINT ERROR_MESSAGE();
+END CATCH;
+GO
+
+-- Sales Fact View
+BEGIN TRY
+    IF OBJECT_ID('gold.fact_sales', 'V') IS NOT NULL
+        PRINT 'Altering existing view: gold.fact_sales';
+    ELSE
+        PRINT 'Creating new view: gold.fact_sales';
+
+    EXEC('
+    CREATE OR ALTER VIEW gold.fact_sales AS
+    SELECT
+        sd.sls_ord_num AS Order_number,
+        pr.Product_key,
+        cu.Customer_key,
+        sd.sls_order_dt AS Order_date,
+        sd.sls_ship_dt AS Ship_date,
+        sd.sls_due_dt AS Due_date,
+        sd.sls_sales AS Sales,
+        sd.sls_quantity AS Quantity,
+        sd.sls_price AS Price
+    FROM silver.crm_sales_details sd
+    LEFT JOIN gold.dim_customers cu ON sd.sls_cust_id = cu.Customer_id
+    LEFT JOIN gold.dim_products pr ON sd.sls_prd_key = pr.Product_number
+    ');
+END TRY
+BEGIN CATCH
+    PRINT 'Error creating or altering gold.fact_sales view:';
+    PRINT ERROR_MESSAGE();
+END CATCH;
+GO
